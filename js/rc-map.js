@@ -27,6 +27,8 @@ class RaycasterMap {
 		this.trackMouseDraw = this.trackMouse(this, this.ghostRadius, false, false, this.keepBorder);
 		this.trackMouseClear = this.trackMouse(this, this.ghostRadius, false, true, this.keepBorder);
 		this.trackMouseGhost = this.trackMouse(this, this.ghostRadius, true, false, this.keepBorder);
+		this.trackMouseDrawClear = this.setTrackMouseDrawClear(this);
+		this.stopTrackMouseDrawClear = this.unsetTrackMouseDrawClear(this);
 		this.noFillColour = props.hasOwnProperty("noFillColour") ? props.noFillColour : "#d8dee1";
 		this.strokeColour = props.hasOwnProperty("strokeColour") ? props.strokeColour : "#c8ced1";
 		this.lastUpdate = undefined;
@@ -143,6 +145,36 @@ class RaycasterMap {
 		}
 	}
 
+	setTrackMouseDrawClear(self) {
+		return (event) => {
+			let clear = false;
+				if (event.button !== 0) {
+					clear = true;
+				}
+				if (clear) {
+					self.trackMouseClear(event);
+					self.canvas.addEventListener("mousemove", self.trackMouseClear);
+				} else {
+					self.trackMouseDraw(event);
+					self.canvas.addEventListener("mousemove", self.trackMouseDraw);
+				}
+		};
+	}
+
+	unsetTrackMouseDrawClear(self) {
+		return (event) => {
+			let clear = false;
+				if (event.button !== 0) {
+					clear = true;
+				}
+				if (clear) {
+					self.canvas.removeEventListener("mousemove", self.trackMouseClear);
+				} else {
+					self.canvas.removeEventListener("mousemove", self.trackMouseDraw);
+				}
+		};
+	}
+
 	drawLoop(timestamp) {
 		if (this.lastUpdate === undefined) {
 			this.lastUpdate = timestamp;
@@ -158,34 +190,11 @@ class RaycasterMap {
 	setDrawMode(enabled=false) {
 		if (enabled) {
 			this.canvas.addEventListener("mousemove", this.trackMouseGhost);
-			this.canvas.addEventListener("mousedown", (event) => {
-				// this.canvas.removeEventListener("mousemove", trackMouseGhost);
-				let clear = false;
-				if (event.button !== 0) {
-					clear = true;
-				}
-				if (clear) {
-					this.trackMouseClear(event);
-					this.canvas.addEventListener("mousemove", this.trackMouseClear);
-				} else {
-					this.trackMouseDraw(event);
-					this.canvas.addEventListener("mousemove", this.trackMouseDraw);
-				}
-			});
-			this.canvas.addEventListener("mouseup", (event) => {
-				let clear = false;
-				if (event.button !== 0) {
-					clear = true;
-				}
-				if (clear) {
-					this.canvas.removeEventListener("mousemove", this.trackMouseClear);
-				} else {
-					this.canvas.removeEventListener("mousemove", this.trackMouseDraw);
-				}
-				// this.canvas.addEventListener("mousemove", trackMouseGhost);
-			});
+			this.canvas.addEventListener("mousedown", this.trackMouseDrawClear);
+			this.canvas.addEventListener("mouseup", this.stopTrackMouseDrawClear);
 		} else {
 			this.clearMapGhost();
+			this.canvas.removeEventListener("mousedown", this.trackMouseDrawClear);
 			this.canvas.removeEventListener("mousemove", this.trackMouseGhost);
 			this.canvas.removeEventListener("mousemove", this.trackMouseClear);
 			this.canvas.removeEventListener("mousemove", this.trackMouseDraw);
