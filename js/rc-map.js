@@ -1,6 +1,5 @@
 class RaycasterMap {
-	constructor(canvas_id, props) {
-		const self = this;
+	constructor(canvas_id, props={}) {
 		this.width = props.hasOwnProperty("width") ? Math.ceil(props.width) : 96;
 		this.height = props.hasOwnProperty("height") ? Math.ceil(props.height) : 54;
 		if (this.width < 10) {
@@ -36,6 +35,7 @@ class RaycasterMap {
 		this.canvas.oncontextmenu = (event) => {
 			event.preventDefault();
 		}
+		this.player = null;
 	}
 
 	initMap(width, height) {
@@ -183,6 +183,9 @@ class RaycasterMap {
 		if (elapsed > this.frameInterval) {
 			this.clear();
 			this.drawMap();
+			if (this.player !== null) {
+				this.drawPlayer();
+			}
 		}
 		requestAnimationFrame(timestamp => this.drawLoop(timestamp));
 	}
@@ -200,5 +203,33 @@ class RaycasterMap {
 			this.canvas.removeEventListener("mousemove", this.trackMouseDraw);
 		}
 		requestAnimationFrame(timestamp => this.drawLoop(timestamp));
+	}
+
+	setPlayer(player) {
+		this.player = player;
+	}
+
+
+
+	drawPlayer() {
+		let x = this.player.x;
+		let y = this.player.y;
+		let r = this.player.radius;
+		let col = this.player.colour;
+		let h = this.player.heading;
+		this.ctx.beginPath();
+		this.ctx.arc(x, y, r, 0, 2 * Math.PI);
+		this.ctx.fillStyle = col;
+		this.ctx.fill();
+		this.ctx.closePath();
+		this.ctx.beginPath();
+		this.ctx.moveTo(x, y);
+		this.ctx.lineTo(
+			x + (Math.cos(h) * r * 2.5),
+			y + (Math.sin(h) * r * 2.5)
+		);
+		this.ctx.strokeStyle = col;
+		this.ctx.stroke();
+		this.ctx.closePath();
 	}
 }
