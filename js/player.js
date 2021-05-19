@@ -15,7 +15,6 @@ class Player {
 		this.collisionNPoints = props.hasOwnProperty("collisionNPoints") ? Math.max(Math.floor(props.collisionNPoints), 3) : 4;
 		this.collisionSquare = props.hasOwnProperty("collisionSquare") ? (props.collisionSquare && this.collisionNPoints === 4) : true;
 		this.collisionPoints = this.getCollisionPoints();
-		console.log(this.collisionSquare);
 		this.map = props.hasOwnProperty("map") ? props.map : null;
 	}
 
