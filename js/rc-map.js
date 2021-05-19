@@ -21,11 +21,11 @@ class RaycasterMap {
 		this.mapGhost = this.initMapGhost(this.width, this.height);
 		this.fillColour = props.hasOwnProperty("fillColour") ? props.fillColour : "#343332";
 		this.ghostFillColour = props.hasOwnProperty("ghostFillColour") ? props.ghostFillColour : "#34333231";
-		this.ghostRadius = props.hasOwnProperty("ghostRadius") ? props.ghostRadius : 2;
+		this.brushRadius = props.hasOwnProperty("brushRadius") ? props.brushRadius : 1;
 		this.keepBorder = props.hasOwnProperty("keepBorder") ? props.keepBorder : true;
-		this.trackMouseDraw = this.trackMouse(this, this.ghostRadius, false, false, this.keepBorder);
-		this.trackMouseClear = this.trackMouse(this, this.ghostRadius, false, true, this.keepBorder);
-		this.trackMouseGhost = this.trackMouse(this, this.ghostRadius, true, false, this.keepBorder);
+		this.trackMouseDraw = this.trackMouse(this, this.brushRadius, false, false, this.keepBorder);
+		this.trackMouseClear = this.trackMouse(this, this.brushRadius, false, true, this.keepBorder);
+		this.trackMouseGhost = this.trackMouse(this, this.brushRadius, true, false, this.keepBorder);
 		this.trackMouseDrawClear = this.setTrackMouseDrawClear(this);
 		this.stopTrackMouseDrawClear = this.unsetTrackMouseDrawClear(this);
 		this.noFillColour = props.hasOwnProperty("noFillColour") ? props.noFillColour : "#d8dee1";
@@ -36,6 +36,7 @@ class RaycasterMap {
 			event.preventDefault();
 		}
 		this.player = null;
+		this.playerRadius = props.hasOwnProperty("playerRadius") ? props.playerRadius : 2;
 	}
 
 	initMap(width, height) {
@@ -87,15 +88,27 @@ class RaycasterMap {
 		}
 	}
 
-	fillSquare(x, y, radius=0, ghost=false, clear=false, keepBorder=true) {
+	fillSquare(x, y, playerRadius=1, ghost=false, clear=false, keepBorder=true) {
 		let map = ghost ? this.mapGhost : this.map;
-		let r = Math.floor(Math.max(radius, 0));
-		if (r === 0) {
+		if (clear || this.player === null || Math.sqrt(((this.player.x - x) ** 2) + ((this.player.y - y) ** 2)) > playerRadius) {
 			if (y == 0 || x == 0 || y == (this.height - 1) || x == (this.width - 1)) {
 				map[y][x] = keepBorder ? true : (clear ? false : true);
 			} else {
 				map[y][x] = clear ? false : true;
 			}
+		}
+	}
+
+	fillSquares(x, y, radius=0, ghost=false, clear=false, keepBorder=true) {
+		// let map = ghost ? this.mapGhost : this.map;
+		let r = Math.floor(Math.max(radius, 0));
+		if (r === 0) {
+			this.fillSquare(x, y, this.playerRadius, ghost, clear, keepBorder);
+			// if (y == 0 || x == 0 || y == (this.height - 1) || x == (this.width - 1)) {
+			// 	map[y][x] = keepBorder ? true : (clear ? false : true);
+			// } else {
+			// 	map[y][x] = clear ? false : true;
+			// }
 		} else {
 			let xMin = Math.max(x - r, 0);
 			let xMax = Math.min(x + r, this.width - 1);
@@ -104,11 +117,12 @@ class RaycasterMap {
 			for (let i = yMin; yMin <= i && i <= yMax; i++) {
 				for (let j = xMin; xMin <= j && j <= xMax; j++) {
 					if (Math.sqrt(((i - y) ** 2) + ((j - x) ** 2)) <= r) {
-						if (i == 0 || j == 0 || i == (this.height - 1) || j == (this.width - 1)) {
-							map[i][j] = keepBorder ? true : (clear ? false : true);
-						} else {
-							map[i][j] = clear ? false : true;
-						}
+						this.fillSquare(j, i,  this.playerRadius, ghost, clear, keepBorder);
+						// if (i == 0 || j == 0 || i == (this.height - 1) || j == (this.width - 1)) {
+						// 	map[i][j] = keepBorder ? true : (clear ? false : true);
+						// } else {
+						// 	map[i][j] = clear ? false : true;
+						// }
 					}
 				}
 			}
@@ -141,7 +155,7 @@ class RaycasterMap {
 			let xPos = xyPos[0];
 			let yPos = xyPos[1];
 			self.clearMapGhost();
-			self.fillSquare(xPos, yPos, radius, ghost, clear, keepBorder);
+			self.fillSquares(xPos, yPos, radius, ghost, clear, keepBorder);
 		}
 	}
 
@@ -209,12 +223,10 @@ class RaycasterMap {
 		this.player = player;
 	}
 
-
-
 	drawPlayer() {
-		let x = this.player.x;
-		let y = this.player.y;
-		let r = this.player.radius;
+		let x = (this.player.x + 0.5) * this.scale;
+		let y = (this.player.y + 0.5) * this.scale;
+		let r = this.player.radius * this.scale;
 		let col = this.player.colour;
 		let h = this.player.heading;
 		this.ctx.beginPath();

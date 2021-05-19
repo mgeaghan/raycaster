@@ -17,14 +17,15 @@ let rc_map = new RaycasterMap("raycaster-map-canvas", {
 	scale: 8,
 });
 rc_map.drawMap();
-rc_map.setDrawMode(draw_mode.checked, 2, true);
+rc_map.setDrawMode(draw_mode.checked);
 draw_mode.onclick = () => {
-	rc_map.setDrawMode(draw_mode.checked, 2, true);
+	rc_map.setDrawMode(draw_mode.checked);
 }
 // END MAP
 
 // PLAYER
-let player = new Player(50, 50, rc_map.canvas.width, rc_map.canvas.height);
+let player = new Player(8, 8, rc_map.width, rc_map.height);
+player.enableMovement();
 // END PLAYER
 
 rc_map.setPlayer(player);
