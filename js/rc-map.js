@@ -37,6 +37,8 @@ class RaycasterMap {
 		}
 		this.player = null;
 		this.playerRadius = props.hasOwnProperty("playerRadius") ? props.playerRadius : 2;
+		this.drawHeading = props.hasOwnProperty("drawHeading") ? props.drawHeading : true;
+		this.drawCollisions = props.hasOwnProperty("drawCollisions") ? props.drawCollisions : false;
 	}
 
 	initMap(width, height) {
@@ -198,7 +200,7 @@ class RaycasterMap {
 			this.clear();
 			this.drawMap();
 			if (this.player !== null) {
-				this.drawPlayer();
+				this.drawPlayer(this.drawHeading, this.drawCollisions);
 			}
 		}
 		requestAnimationFrame(timestamp => this.drawLoop(timestamp));
@@ -223,7 +225,7 @@ class RaycasterMap {
 		this.player = player;
 	}
 
-	drawPlayer() {
+	drawPlayer(heading=true, collision=false) {
 		let x = (this.player.x + 0.5) * this.scale;
 		let y = (this.player.y + 0.5) * this.scale;
 		let r = this.player.radius * this.scale;
@@ -234,14 +236,36 @@ class RaycasterMap {
 		this.ctx.fillStyle = col;
 		this.ctx.fill();
 		this.ctx.closePath();
-		this.ctx.beginPath();
-		this.ctx.moveTo(x, y);
-		this.ctx.lineTo(
-			x + (Math.cos(h) * r * 2.5),
-			y + (Math.sin(h) * r * 2.5)
-		);
-		this.ctx.strokeStyle = col;
-		this.ctx.stroke();
-		this.ctx.closePath();
+		if (heading) {
+			this.ctx.beginPath();
+			this.ctx.moveTo(x, y);
+			this.ctx.lineTo(
+				x + (Math.cos(h) * r * 2.5),
+				y + (Math.sin(h) * r * 2.5)
+			);
+			this.ctx.strokeStyle = col;
+			this.ctx.stroke();
+			this.ctx.closePath();
+		}
+		if (collision) {
+			let cx = this.player.collisionPoints[0];
+			let cy = this.player.collisionPoints[1];
+			let cx_s = 0;
+			let cy_s = 0;
+			this.ctx.beginPath();
+			for (let i = 0; i < cx.length; i++) {
+				cx_s = (cx[i] + 0.5) * this.scale;
+				cy_s = (cy[i] + 0.5) * this.scale;
+				if (i === 0) {
+					this.ctx.moveTo(cx_s, cy_s);
+				} else {
+					this.ctx.lineTo(cx_s, cy_s);
+				}
+			}
+			this.ctx.lineTo((cx[0] + 0.5) * this.scale, (cy[0] + 0.5) * this.scale);
+			this.ctx.strokeStyle = col;
+			this.ctx.stroke();
+			this.ctx.closePath();
+		}
 	}
 }
