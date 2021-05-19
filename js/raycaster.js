@@ -16,6 +16,7 @@ let rc_fps = new RaycasterFPS("raycaster-fps-canvas", {
 let rc_map = new RaycasterMap("raycaster-map-canvas", {
 	scale: 8,
 	drawCollisions: true,
+	drawRays: true,
 });
 rc_map.drawMap();
 rc_map.setDrawMode(draw_mode.checked);
@@ -28,9 +29,13 @@ draw_mode.onclick = () => {
 let player = new Player(8, 8, rc_map.width, rc_map.height, {
 	collisionNPoints: 4,
 	collisionRadius: 2,
+	map: rc_map.map,
+	fov: (Math.PI / 1),
+	nrays: 10,
+	dov: 20,
 });
 player.enableMovement();
-player.setCollisions(true, rc_map.map);
+player.setCollisions(true);
 // END PLAYER
 
 rc_map.setPlayer(player);

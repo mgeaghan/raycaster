@@ -16,6 +16,11 @@ class Player {
 		this.collisionSquare = props.hasOwnProperty("collisionSquare") ? (props.collisionSquare && this.collisionNPoints === 4) : true;
 		this.collisionPoints = this.getCollisionPoints();
 		this.map = props.hasOwnProperty("map") ? props.map : null;
+		this.fov = props.hasOwnProperty("fov") ? props.fov : (Math.PI / 2);
+		this.nrays = props.hasOwnProperty("nrays") ? props.nrays : 99;
+		this.dov = props.hasOwnProperty("dov") ? props.dov : 20;
+		this.rays = [];
+		this.raycast(this.fov, this.nrays, this.dov);
 	}
 
 	setCollisions(enabled=true, map=this.map, collisionNPoints=this.collisionNPoints) {
@@ -96,12 +101,14 @@ class Player {
 			this.x += dx;
 			this.y += dy;
 			this.collisionPoints = this.getCollisionPoints();
+			// this.raycast(this.fov, this.nrays, this.dov);
 		} else {
 			let collide = this.collision(this.x + dx, this.y + dy);
 			if (!collide) {
 				this.x += dx;
 				this.y += dy;
 				this.collisionPoints = this.getCollisionPoints();
+				// this.raycast(this.fov, this.nrays, this.dov);
 			}
 		}
 	}
@@ -128,6 +135,58 @@ class Player {
 				self.move(0, 0, dh);
 			}
 		};
+	}
+
+	rayCollision(x, y) {
+		// return true if any collision else false
+		let x_r = 0;
+		let y_r = 0;
+		if (Math.abs(x - Math.round(x)) < 0.1) {
+			x_r = Math.round(x);
+		} else {
+			x_r = Math.floor(x);
+		}
+		if (Math.abs(y - Math.round(y)) < 0.1) {
+			y_r = Math.round(y);
+		} else {
+			y_r = Math.floor(y);
+		}
+		if (this.map[y_r][x_r] == 1) {
+			return true;
+		}
+		return false;
+	}
+
+	raycast(fov=this.fov, nrays=this.nrays, dov=this.dov) {
+		nrays = Math.floor(nrays);
+		fov = Math.abs(fov);
+		let r = 0;
+		let r_x = 0;
+		let r_y = 0;
+		let dTheta = (fov / (nrays - 1));
+		let theta = 0;
+		let dx = 0;
+		let dy = 0;
+		theta = this.heading - (fov / 2);
+		this.rays = [];
+		for (let i = 0; i < nrays; i++) {
+			r = 0;
+			for (let j = 0; r < dov; j++) {
+				dx = (Math.cos(theta)) * j;
+				dy = (Math.sin(theta)) * j;
+				r_x = this.x + dx;
+				r_y = this.y + dy;
+				r = j * Math.sqrt(2);
+				if (this.rayCollision(r_x, r_y)) {
+					this.rays.push([r_x, r_y]);
+					break;
+				}
+			}
+			if (this.rays.length === i) {
+				this.rays.push([null, null]);
+			}
+			theta += dTheta;
+		}
 	}
 
 	enableMovement() {

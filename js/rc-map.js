@@ -39,6 +39,7 @@ class RaycasterMap {
 		this.playerRadius = props.hasOwnProperty("playerRadius") ? props.playerRadius : 2;
 		this.drawHeading = props.hasOwnProperty("drawHeading") ? props.drawHeading : true;
 		this.drawCollisions = props.hasOwnProperty("drawCollisions") ? props.drawCollisions : false;
+		this.drawRays = props.hasOwnProperty("drawRays") ? props.drawRays : false;
 	}
 
 	initMap(width, height) {
@@ -200,7 +201,8 @@ class RaycasterMap {
 			this.clear();
 			this.drawMap();
 			if (this.player !== null) {
-				this.drawPlayer(this.drawHeading, this.drawCollisions);
+				this.player.raycast();
+				this.drawPlayer(this.drawHeading, this.drawCollisions, this.drawRays);
 			}
 		}
 		requestAnimationFrame(timestamp => this.drawLoop(timestamp));
@@ -225,7 +227,7 @@ class RaycasterMap {
 		this.player = player;
 	}
 
-	drawPlayer(heading=true, collision=false) {
+	drawPlayer(heading=true, collision=false, rays=false) {
 		let x = (this.player.x + 0.5) * this.scale;
 		let y = (this.player.y + 0.5) * this.scale;
 		let r = this.player.radius * this.scale;
@@ -266,6 +268,19 @@ class RaycasterMap {
 			this.ctx.strokeStyle = col;
 			this.ctx.stroke();
 			this.ctx.closePath();
+		}
+		if (rays) {
+			let ray_list = this.player.rays;
+			for (let i = 0; i < ray_list.length; i++) {
+				if (ray_list[i][0] !== null) {
+					this.ctx.beginPath();
+					this.ctx.moveTo(x, y);
+					this.ctx.lineTo(ray_list[i][0] * this.scale, ray_list[i][1] * this.scale);
+					this.ctx.strokeStyle = col;
+					this.ctx.stroke();
+					this.ctx.closePath();
+				}
+			}
 		}
 	}
 }
