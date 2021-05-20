@@ -30,8 +30,13 @@ class RaycasterFPS {
 		this.player = player;
 	}
 
-	getYProjection(dist, height=this.height, max_theta=(Math.PI)) {
-		let theta = Math.atan((height / 2) / dist);
+	getYProjection(dist, height=this.height, max_theta=(Math.PI), max_dist=this.dov) {
+		let theta = 0;
+		if (dist > max_dist) {
+			theta = Math.atan((height / 2) / max_dist);
+		} else {
+			theta = Math.atan((height / 2) / dist);
+		}
 		let propTheta = (2 * theta) / max_theta;
 		if (propTheta > 1) {
 			return height;
@@ -45,15 +50,16 @@ class RaycasterFPS {
 	}
 
 	shadeByDistance(dist, max_dist, wallColour=this.wallColour, bgColour = this.bgColour) {
-		let propDist = 1 - dist/max_dist;
+		let propDist = dist/max_dist;
+		let scale = 1 - propDist;
 		if (propDist > 1) {
-			return this.rgbToString(...wallColour);
-		} else if (propDist < 0) {
 			return this.rgbToString(...bgColour);
+		} else if (propDist < 0) {
+			return this.rgbToString(...wallColour);
 		} else {
 			let shadeColour = [];
 			for (let i = 0; i < 3; i++) {
-				shadeColour.push(bgColour[i] + propDist * (wallColour[i] - bgColour[i]));
+				shadeColour.push(bgColour[i] + scale * (wallColour[i] - bgColour[i]));
 			}
 			return this.rgbToString(...shadeColour);
 		}
@@ -72,7 +78,11 @@ class RaycasterFPS {
 		let cy = hmax / 2;
 		for (let i = 0; i < ray_list.length; i++) {
 			// d = ray_list[i][2];
-			d = ray_list[i][2] * Math.cos(ray_list[i][3]);
+			if (ray_list[i][0] === null) {
+				d = this.player.dov;
+			} else {
+				d = ray_list[i][2] * Math.cos(ray_list[i][3]);
+			}
 			// h = hmax / d;
 			h = this.getYProjection(d) * this.scale;
 			this.ctx.fillStyle = this.shadeByDistance(d, this.player.dov);

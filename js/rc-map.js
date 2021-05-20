@@ -199,6 +199,7 @@ class RaycasterMap {
 		const elapsed = timestamp - this.lastUpdate;
 		if (elapsed > this.frameInterval) {
 			this.clear();
+			this.rect = this.canvas.getBoundingClientRect();
 			this.drawMap();
 			if (this.player !== null) {
 				this.player.raycast();
