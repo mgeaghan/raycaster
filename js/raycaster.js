@@ -9,6 +9,8 @@ let draw_mode = document.getElementById("draw-mode");
 // FPS
 let rc_fps = new RaycasterFPS("raycaster-fps-canvas", {
 	scale: 8,
+	roofColour: [150, 150, 150],
+	floorColour: [52, 51, 50],
 });
 // END FPS
 
@@ -30,12 +32,14 @@ let player = new Player(8, 8, rc_map.width, rc_map.height, {
 	collisionNPoints: 4,
 	collisionRadius: 2,
 	map: rc_map.map,
-	fov: (Math.PI / 1),
-	nrays: 10,
-	dov: 20,
+	fov: (Math.PI / 3),
+	nrays: 96,
+	dov: 150,
 });
 player.enableMovement();
 player.setCollisions(true);
 // END PLAYER
 
 rc_map.setPlayer(player);
+rc_fps.setPlayer(player);
+rc_fps.startDrawLoop();

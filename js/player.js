@@ -178,12 +178,12 @@ class Player {
 				r_y = this.y + dy;
 				r = j * Math.sqrt(2);
 				if (this.rayCollision(r_x, r_y)) {
-					this.rays.push([r_x, r_y]);
+					this.rays.push([r_x, r_y, r, Math.abs(this.heading - theta)]);
 					break;
 				}
 			}
 			if (this.rays.length === i) {
-				this.rays.push([null, null]);
+				this.rays.push([null, null, null, null]);
 			}
 			theta += dTheta;
 		}
